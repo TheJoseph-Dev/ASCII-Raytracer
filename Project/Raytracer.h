@@ -88,7 +88,6 @@ ScenePayload world(Ray r) {
         if(d == b) { 
             closestHit = p;
             normal = n;
-            //printf("N: (%.2f, %.2f, %.2f)\n", normal.x, normal.y, normal.z);
         }
     }
 

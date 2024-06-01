@@ -8,7 +8,7 @@
 
 
 Camera camera;
-#define FRAMEHOLD_TIME 3000
+#define FRAMEHOLD_TIME 10
 
 void start();
 void loop();

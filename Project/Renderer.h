@@ -1,8 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#define WINDOW_WIDTH 320
-#define WINDOW_HEIGHT 81
+#define WINDOW_WIDTH 188
+#define WINDOW_HEIGHT 46
 
 // Pixels
 #define PIXELS 92
