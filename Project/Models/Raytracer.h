@@ -9,7 +9,7 @@ float time = 0.0f;
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-float iSphere(Ray ray, vec3 pos, float radius)
+float iSphere(Ray ray, vec3 pos, float radius, vec3* normal )
 {
 	//sphere at origin has equation |xyz| = r
 	//sp |xyz|^2 = r^2.
@@ -23,12 +23,15 @@ float iSphere(Ray ray, vec3 pos, float radius)
 
     const float missHit = -1.0;
 	float t = (h < 0.0) ? missHit : -b - sqrt(h); // We use -sqrt because we want the CLOSEST distance
+    
+    *normal = normalize(vSum(vSum(ray.origin, vMulf(pos, -1)), vMulf(ray.dir, t)));
 
 	return t;
 }
 
-float iBox(Ray r, vec3 boxSize, vec3* outNormal ) 
+float iBox(Ray r, vec3 pos, vec3 boxSize, vec3* outNormal ) 
 {   
+    r.origin = vSum(r.origin, vMulf(pos, -1));
     vec3 m = { 1.0 / r.dir.x, 1.0 / r.dir.y, 1.0 / r.dir.z };
 	vec3 n = vMul(m, r.origin);
 	vec3 k = vMul(vAbs(m), boxSize);
@@ -46,68 +49,70 @@ float iBox(Ray r, vec3 boxSize, vec3* outNormal )
         MIN(tN, tF);
 }
 
+#define SPHERE_TYPE 0
+#define BOX_TYPE 1
+typedef struct SceneObject {
+    unsigned int type;
+    vec3 pos;
+    vec3 normal;
+    float size;
+} SceneObject;
+
 typedef struct ScenePayload {
-    vec3 objPos;
-    vec3 objNormal;
+    SceneObject hitObj;
     float d;
 } ScenePayload;
 
+typedef struct Scene {
+    const SceneObject* objects;
+    unsigned int objectsCount;
+} Scene;
+
 int miss(float hit) { return hit <= 0.0; }
 
-ScenePayload world(Ray r) {
+ScenePayload world(Ray r, const SceneObject* sObjects, unsigned int objsCount) {
     float d = MAX_D;
-    vec3 closestHit;
-    vec3 normal;
+    SceneObject hitObj;
 
-    {
-        vec3 p = { 0.0, 0.0, 0.5 };
-        float s = iSphere(r, p, 0.5);
-        if (!miss(s)) d = MIN( d, s );
-        if(d == s) {
-            closestHit = p;
-            normal = normalize(vSum(vSum(r.origin, vMulf(p, -1)), vMulf(r.dir, d)));
+    for(int i = 0; i < objsCount; i++) {
+        SceneObject sObj = sObjects[i];
+        float s;
+        switch (sObj.type) {
+            case SPHERE_TYPE:
+            
+            s = iSphere(r, sObj.pos, sObj.size, &sObj.normal);
+            if (!miss(s)) d = MIN( d, s );
+            if(d == s) hitObj = sObj;
+            
+            break;
+            case BOX_TYPE:
+
+            s = iBox(r, sObj.pos, vMulf(vOne(), sObj.size), &sObj.normal);
+            if (!miss(s)) d = MIN( d, s );
+            if(d == s) hitObj = sObj;
+             break;
         }
     }
 
-    {
-        vec3 p = { cos(time*2), 0.4, sin(time*2) };
-        float s = iSphere(r, p, 0.15);
-        if(!miss(s)) d = MIN( d, s );
-        if(d == s) { 
-            closestHit = p;
-            normal = normalize(vSum(vSum(r.origin, vMulf(p, -1)), vMulf(r.dir, d)));
-        }
-    }
-
-    {
-        vec3 n;
-        vec3 p = { -2.0, -0.5, 1.0 };
-        r.origin = vSum(r.origin, vMulf(p, -1));
-        float b = iBox(r, vMulf(vOne(), 0.3), &n);
-        if (!miss(b)) d = MIN( d, b );
-        if(d == b) { 
-            closestHit = p;
-            normal = n;
-        }
-    }
-
-    ScenePayload sp = { closestHit, normal, d };
+    ScenePayload sp = { hitObj, d };
     return sp;
 }
 
-float render(Ray r) {
-    ScenePayload sp = world(r);
+#define len(arr, type) sizeof(arr)/sizeof(type)
+float render(Ray r, const Scene* scene) {
+
+    ScenePayload sp = world(r, scene->objects, scene->objectsCount);
     if (sp.d >= MAX_D) return 0.0f;
 
-    vec3 normals = sp.objNormal;
+    vec3 normals = sp.hitObj.normal;
 
     vec3 lightPos = { 1.0, 1.0, -1.0 }; //{ cos(time), 1.0, sin(time) };
-    vec3 lightDir = normalize(vSum(lightPos, vMulf(sp.objPos, -1)));
+    vec3 lightDir = normalize(vSum(lightPos, vMulf(sp.hitObj.pos, -1)));
     float shadedScene = dot(normals, lightDir);
     //shadedScene/=2.0; // Remap normals from [-1 1] to [0 1]
 
-    float scene = MIN(shadedScene, 1.0);
-    return scene;
+    float tracedScene = MIN(shadedScene, 1.0);
+    return tracedScene;
 }
 
 #endif

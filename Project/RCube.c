@@ -65,18 +65,8 @@ void draw() {
             yRotate(&dir, camera.yRot);
             Ray ray = { camera.pos, dir };
 
-            /* Raymarch Stuff
-            vec3 lightPos = { cos(time), 1.0, sin(time) };
-            vec3 normals = raymarch(ray);
-            float diffuseScene = dot(normals, lightPos);///3.14; 
-            diffuseScene += 1.0;
-            diffuseScene /= 2.0; //diffuseScene /= 6.28;
-            */
-
             SceneObject objs[] = {
-                { SPHERE_TYPE, { 0.0, 0.0, 0.5 }, vZero(), 0.5 },
-                { SPHERE_TYPE, { cos(time*2), 0.4, sin(time*2) }, vZero(), 0.15 },
-                { BOX_TYPE, { -2.0, -0.5, 1.0 }, vZero(), 0.3 }
+                { BOX_TYPE, { 0.0, 0.0, 1.0 }, vZero(), 0.5 }
             };
 
             Scene scene = { objs, len(objs, SceneObject) };
