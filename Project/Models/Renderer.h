@@ -27,4 +27,12 @@ char getPixel(float color) {
         if(color < pixelsBrightness[i]) return pixels[i];
 }
 
+void drawPixel(size_t i, size_t j) {
+    putchar(canvas[i][j]);
+}
+
+void clear() {
+    printf("\x1b[2j\x1b[H");
+}
+
 #endif

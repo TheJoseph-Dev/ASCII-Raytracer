@@ -54,4 +54,18 @@ void yRotate(vec3* v, float angle) {
     (*v).z = vv.x*sin(angle) + vv.z*cos(angle);
 }
 
+void rotate(vec3* v, const vec3 euler) {
+    vec3 vv = *v;
+    (*v).y = vv.y*cos(euler.x) - vv.z*sin(euler.x);
+    (*v).z = vv.y*sin(euler.x) + vv.z*cos(euler.x);
+    
+    vv = *v;
+    (*v).x = vv.x*cos(euler.y) - vv.z*sin(euler.y);
+    (*v).z = vv.x*sin(euler.y) + vv.z*cos(euler.y);
+
+    vv = *v;
+    (*v).x = vv.x*cos(euler.z) - vv.y*sin(euler.z);
+    (*v).y = vv.x*sin(euler.z) + vv.y*cos(euler.z);
+}
+
 #endif

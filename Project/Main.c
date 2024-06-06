@@ -8,13 +8,11 @@
 
 
 Camera camera;
-#define FRAMEHOLD_TIME 10
+#define FRAMEHOLD_TIME 0
 
 void start();
 void loop();
-void clear();
 void draw();
-void drawPixel();
 void frameHolder();
 
 int main() {
@@ -36,18 +34,13 @@ void start() {
 void loop() {
     while(1) {
         clear();
-        time += 0.1;
+        time += 0.05;
         draw();
         frameHolder(FRAMEHOLD_TIME);
         updatePosition(&camera.pos, 0.25);
         updateRotation(&camera.yRot,  15.0 * DEG2RAD);
     }
 }
-
-void clear() {
-    printf("\x1b[2j\x1b[H");
-}
-
 
 void draw() {
 
@@ -74,9 +67,9 @@ void draw() {
             */
 
             SceneObject objs[] = {
-                { SPHERE_TYPE, { 0.0, 0.0, 0.5 }, vZero(), 0.5 },
-                { SPHERE_TYPE, { cos(time*2), 0.4, sin(time*2) }, vZero(), 0.15 },
-                { BOX_TYPE, { -2.0, -0.5, 1.0 }, vZero(), 0.3 }
+                { SPHERE_TYPE, { 0.0, 0.0, 0.5 }, vZero(), vZero(), 0.5 },
+                { SPHERE_TYPE, { cos(time*2), 0.4, sin(time*2) }, vZero(), vZero(), 0.15 },
+                { BOX_TYPE, { -2.0, -0.5, 1.0 }, vZero(), {time*2, time, time/2}, 0.3 }
             };
 
             Scene scene = { objs, len(objs, SceneObject) };
@@ -89,10 +82,6 @@ void draw() {
     }
 
     printf("Pos: (%.2f %.2f %.2f) - Angle: %.2f\n", camera.pos.x, camera.pos.y, camera.pos.z, camera.yRot * RAD2DEG);
-}
-
-void drawPixel(size_t i, size_t j) {
-    putchar(canvas[i][j]);
 }
 
 void frameHolder(int time) {
